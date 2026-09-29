@@ -1,31 +1,28 @@
-# Web3SkillBuildz 🚀
+# BountyBoard dApp (Monad Testnet) 🚀
 
-A modern Web3 decentralized application built with Next.js 14, Tailwind CSS, Wagmi v2, Viem, and Hardhat v2, specifically configured for the **Monad Testnet**.
+A modern Web3 decentralized Bounty Board application built with Next.js, Tailwind CSS, Wagmi v2, Viem, and Hardhat v2, running on **Monad Testnet** (Chain ID: `10143`).
 
-## ⚠️ Important Installation Rules 
-
-Web3 tooling dependencies can be extremely sensitive to version mismatches (especially between ESM/CommonJS and Hardhat versions). **Follow these exact rules to avoid breaking the app:**
-
-### 1. Hardhat Versions (CRITICAL)
-This project uses **Hardhat v2** (specifically `^2.28.0`). 
-Do **NOT** update to Hardhat v3 or install `@nomicfoundation/hardhat-toolbox@latest`. If you do, you will encounter ESM/CommonJS peer dependency conflicts, and the `hardhat.config.ts` will throw `HH19` and `HH13` errors.
-
-If you ever need to reinstall dependencies, you must use the exact `hh2` tag for the toolbox:
-```bash
-npm install --save-dev hardhat@^2.28.0 "@nomicfoundation/hardhat-toolbox@hh2"
-```
-*(Also ensure `"type": "module"` is **not** present in your `package.json`!)*
-
-### 2. Wagmi and MetaMask
-This project explicitly uses the `metaMask()` connector from `@wagmi/connectors`. It does **not** use the generic `injected()` connector. 
-If you get a "Cannot find module '@metamask/connect-evm'" error, ensure you install it:
-```bash
-npm install @metamask/connect-evm
-```
+The smart contract acts as a trustless escrow that holds native MON tokens as hackathon bounty rewards and releases them directly upon organizer review and approval.
 
 ---
 
-## 🛠️ Local Development Setup
+## 🎯 MVP Hackathon Flow
+
+1. **Organizer Creates Bounty**:
+   - Sets title, description, and reward amount in MON.
+   - Reward MON tokens are deposited with the transaction and held safely in contract escrow.
+2. **Participant Views Bounty**:
+   - Sees the bounty details, reward in MON, creator address, and live status.
+3. **Participant Submits Solution**:
+   - Submits a GitHub repository or project link stored directly on-chain.
+4. **Organizer Approves Solution**:
+   - Only the bounty creator can approve the submitted solution.
+5. **Participant Claims Reward**:
+   - The approved solver triggers `claimReward()`, and the contract safely transfers the locked MON escrow directly to the solver.
+
+---
+
+## 🛠️ Local Setup & Commands
 
 ### 1. Install Dependencies
 ```bash
@@ -33,32 +30,42 @@ npm install
 ```
 
 ### 2. Environment Variables
-Create a `.env` file in the root of the project:
+Create or update your `.env` file:
 ```env
 # Your EVM Wallet Private Key (for deploying contracts)
 PRIVATE_KEY=your_private_key_here
 
-# The deployed smart contract address to show on the frontend
-NEXT_PUBLIC_CONTRACT_ADDRESS=your_contract_address_here
+# Deployed BountyBoard smart contract address
+NEXT_PUBLIC_CONTRACT_ADDRESS=your_deployed_contract_address_here
 ```
 
-### 3. Smart Contract Deployment (Monad Testnet)
-Compile and deploy the `Greeter` smart contract to the Monad Testnet using Hardhat Ignition:
+### 3. Run Automated Smart Contract Tests
+Run the comprehensive Hardhat test suite verifying the full bounty lifecycle, permissions, and escrow payouts:
+```bash
+npx hardhat test
+```
+
+### 4. Deploy BountyBoard to Monad Testnet
+Compile and deploy the `BountyBoard` contract using Hardhat Ignition:
 ```bash
 npx hardhat compile
-npx hardhat ignition deploy ignition/modules/Greeter.ts --network monadTestnet
+npx hardhat ignition deploy ignition/modules/BountyBoard.ts --network monadTestnet
 ```
-*Note: Make sure the wallet corresponding to your PRIVATE_KEY has testnet MON tokens to pay for gas!*
+*Note: Ensure your `PRIVATE_KEY` wallet has testnet MON to cover deployment gas.*
 
-After deploying, copy the deployed contract address into your `.env` file as `NEXT_PUBLIC_CONTRACT_ADDRESS`.
+Copy the deployed contract address and paste it into your `.env` as `NEXT_PUBLIC_CONTRACT_ADDRESS`.
 
-### 4. Start the Frontend
-If you updated the `.env` file while the server was running, you **must** restart it for Next.js to detect the new variables:
+### 5. Run the Frontend
 ```bash
 npm run dev
 ```
-Open [http://localhost:3000](http://localhost:3000) to view the application. 
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-### 🦊 Troubleshooting MetaMask Connections
-- **"Switch to Testnet First"**: If the UI asks you to switch networks, it means your MetaMask is connected to a different network like Monad Mainnet (Chain ID 143) instead of Monad Testnet (Chain ID 10143). Click the button to automatically switch.
-- **"Failed to fetch" warnings in console**: Testnet RPCs are frequently rate-limited. The app is configured with multiple fallback RPCs (`testnet-rpc.monadinfra.com`, `rpc.ankr.com/monad_testnet`), so Wagmi will automatically handle retries in the background.
+---
+
+## 🦊 Monad Testnet Configuration
+- **Network Name**: Monad Testnet
+- **Chain ID**: `10143`
+- **Currency**: `MON`
+- **RPC URL**: `https://testnet-rpc.monad.xyz`
+- **Explorer**: `https://testnet.monadexplorer.com`
